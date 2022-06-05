@@ -40,7 +40,7 @@ async fn make_graph() -> &'static Graph {
                 f.required().string();
             });
             m.field("authorId", |f| {
-                f.optional().object_id();
+                f.required().object_id();
             });
             m.relation("author", |r| {
                 r.object("Author").fields(vec!["authorId"]).references(vec!["id"]);
