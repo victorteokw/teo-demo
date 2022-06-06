@@ -140,6 +140,12 @@ async fn make_graph() -> &'static Graph {
                 f.description("默认为空，只允许修改一次。");
                 f.optional().r#enum("Sex").write_once();
             });
+            m.relation("favorites", |r| {
+                r.vec("Favorite").fields(vec!["id"]).references(vec!["userId"]);
+            });
+            m.relation("favoriteProducts", |r| {
+                r.vec("Product").through("Favorite").local("user").foreign("product");
+            });
             m.field("createdAt", |f| {
                 f.required().readonly().datetime().on_save(|p| {
                     p.if_p(|p| { p.is_null(); }).then_p(|p| { p.now(); });
@@ -151,6 +157,69 @@ async fn make_graph() -> &'static Graph {
                 });
             });
         });
+
+        g.model("Product", |m| {
+            m.localized_name("产品");
+            m.description("在平台中销售的产品。");
+            m.field("id", |f| {
+                f.primary().required().readonly().object_id().column_name("_id").auto();
+            });
+            m.field("name", |f| {
+                f.localized_name("产品名");
+                f.description("产品名称。");
+                f.required().string();
+            });
+            m.field("description", |f| {
+                f.localized_name("产品描述");
+                f.description("产品描述。");
+                f.optional().string();
+            });
+            m.relation("favorites", |r| {
+                r.vec("Favorite").fields(vec!["id"]).references(vec!["productId"]);
+            });
+            m.relation("favoriteBy", |r| {
+                r.vec("User").through("Favorite").local("product").foreign("user");
+            });
+            m.field("createdAt", |f| {
+                f.required().readonly().datetime().on_save(|p| {
+                    p.if_p(|p| { p.is_null(); }).then_p(|p| { p.now(); });
+                });
+            });
+            m.field("updatedAt", |f| {
+                f.required().readonly().datetime().on_save(|p| {
+                    p.now();
+                });
+            });
+        });
+
+        g.model("Relation", |m| {
+            m.localized_name("用户收藏");
+            m.description("用户收藏的产品，产品被收藏的用户。");
+            m.field("userId", |f| {
+                f.required().object_id();
+            });
+            m.relation("user", |r| {
+                r.object("User").fields(vec!["userId"]).references(vec!["id"]);
+            });
+            m.field("productId", |f| {
+                f.required().object_id();
+            });
+            m.relation("product", |r| {
+                r.object("Product").fields(vec!["productId"]).references(vec!["id"]);
+            });
+            m.field("createdAt", |f| {
+                f.required().readonly().datetime().on_save(|p| {
+                    p.if_p(|p| { p.is_null(); }).then_p(|p| { p.now(); });
+                });
+            });
+            m.field("updatedAt", |f| {
+                f.required().readonly().datetime().on_save(|p| {
+                    p.now();
+                });
+            });
+            m.primary(vec!["userId", "productId"]);
+        });
+
 
         g.model("Admin", |m| {
             m.localized_name("管理员");
