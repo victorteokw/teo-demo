@@ -192,7 +192,7 @@ async fn make_graph() -> &'static Graph {
             });
         });
 
-        g.model("Relation", |m| {
+        g.model("Favorite", |m| {
             m.localized_name("用户收藏");
             m.description("用户收藏的产品，产品被收藏的用户。");
             m.field("userId", |f| {
