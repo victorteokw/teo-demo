@@ -229,6 +229,8 @@ async fn make_graph() -> &'static Graph {
                 f.primary().required().readonly().object_id().column_name("_id").auto();
             });
             m.field("email", |f| {
+                f.localized_name("邮箱");
+                f.description("管理员的公司邮箱。");
                 f.unique().required().string().auth_identity().on_save(|p| {
                     p.email();
                 });
