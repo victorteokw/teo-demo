@@ -39,6 +39,9 @@ async fn make_graph() -> &'static Graph {
             m.field("title", |f| {
                 f.required().string();
             });
+            m.field("published", |f| {
+                f.required().bool().default(false);
+            });
             m.field("authorId", |f| {
                 f.required().object_id();
             });
