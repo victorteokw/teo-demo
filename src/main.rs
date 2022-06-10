@@ -1,6 +1,7 @@
 use tokio::main;
 use teo::core::builders::pipeline_builder::PipelineBuilder;
 use teo::core::graph::Graph;
+use teo::core::value::Value;
 use teo::server::server::Server;
 
 
@@ -20,7 +21,7 @@ async fn make_graph() -> &'static Graph {
             m.field("vec", |f| {
                 f.required().vec(|v| {
                     v.required().string();
-                });
+                }).default(vec!["a", "b", "qq"]);
             });
             m.field("createdAt", |f| {
                 f.required().readonly().datetime().on_save(|p| {
