@@ -10,6 +10,30 @@ async fn make_graph() -> &'static Graph {
 
         g.data_source().mongodb("mongodb://localhost:27017/teotestserver");
 
+        g.model("Unit", |m| {
+            m.field("id", |f| {
+                f.primary().required().readonly().object_id().column_name("_id").auto();
+            });
+            m.field("num", |f| {
+                f.required().f64().default(0f64);
+            });
+            m.field("vec", |f| {
+                f.required().vec(|v| {
+                    v.required().string();
+                });
+            });
+            m.field("createdAt", |f| {
+                f.required().readonly().datetime().on_save(|p| {
+                    p.if_p(|p| { p.is_null(); }).then_p(|p| { p.now(); });
+                });
+            });
+            m.field("updatedAt", |f| {
+                f.required().readonly().datetime().on_save(|p| {
+                    p.now();
+                });
+            });
+        });
+
         g.model("Author", |m| {
             m.field("id", |f| {
                 f.primary().required().readonly().object_id().column_name("_id").auto();
