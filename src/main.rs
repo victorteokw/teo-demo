@@ -33,6 +33,9 @@ async fn make_graph() -> &'static Graph {
                     p.now();
                 });
             });
+            m.on_created(|object| async {
+                println!("OK");
+            });
         });
 
         g.model("Author", |m| {
