@@ -130,7 +130,10 @@ async fn make_graph() -> &'static Graph {
             });
         });
 
-        g.r#enum("Sex", vec!["MALE", "FEMALE"]);
+        g.r#enum("Sex", |e| {
+            e.choice("MALE", |_| {});
+            e.choice("FEMALE", |_| {});
+        });
 
         g.model("User", |m| {
             m.localized_name("用户");
