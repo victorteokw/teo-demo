@@ -21,7 +21,9 @@ async fn make_graph() -> &'static Graph {
                 f.primary().required().readonly().object_id().column_name("_id").auto();
             });
             m.field("num", |f| {
-                f.required().f64().default(0f64);
+                f.required().f64().default(0f64).on_save(|p| {
+                    p.transform(&|v: f64| async move { v + 1.0 });
+                });
             });
             m.field("vec", |f| {
                 f.required().vec(|v| {
