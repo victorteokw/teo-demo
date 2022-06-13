@@ -7,9 +7,14 @@ use teo::server::server::Server;
 
 async fn make_graph() -> &'static Graph {
 
+    let mongo_url = match std::env::var("MONGO_URL") {
+        Ok(url) => url,
+        Err(_err) => "mongodb://127.0.0.1:27017/teotestserver".to_string()
+    };
+
     let graph = Box::leak(Box::new(Graph::new(|g| {
 
-        g.data_source().mongodb("mongodb://localhost:27017/teotestserver");
+        g.data_source().mongodb(&mongo_url);
 
         g.model("Unit", |m| {
             m.field("id", |f| {
@@ -33,8 +38,11 @@ async fn make_graph() -> &'static Graph {
                     p.now();
                 });
             });
-            m.on_created(|object| async {
-                println!("OK");
+            m.on_created(&|object| async {
+                println!("OK: this is created.");
+            });
+            m.on_updated(&|object| async {
+                println!("OK: this is updated.");
             });
         });
 
