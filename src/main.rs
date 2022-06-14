@@ -25,6 +25,11 @@ async fn make_graph() -> &'static Graph {
                     p.transform(&|v: f64| async move { v + 1.0 });
                 });
             });
+            m.field("str", |f| {
+                f.required().string().default("").on_save(|p| {
+                    p.transform(&|v: String| async move { format!("~{v}~")});
+                });
+            });
             m.field("vec", |f| {
                 f.required().vec(|v| {
                     v.required().string();
