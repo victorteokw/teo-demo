@@ -89,7 +89,7 @@ async fn make_graph() -> &'static Graph {
                 f.required().object_id();
             });
             m.relation("author", |r| {
-                r.object("Author").fields(vec!["authorId"]).references(vec!["id"]);
+                r.required().object("Author").fields(vec!["authorId"]).references(vec!["id"]);
             });
             m.field("createdAt", |f| {
                 f.required().readonly().datetime().on_save(|p| {
