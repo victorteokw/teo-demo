@@ -16,6 +16,61 @@ async fn make_graph() -> Graph {
     Graph::new(|g| {
         g.data_source().mongodb(&mongo_url);
         g.url_prefix("/api/v1");
+
+        g.model("Creator", |m| {
+            m.field("id", |f| {
+                f.primary().required().readonly().object_id().column_name("_id").auto();
+            });
+            m.field("name", |f| {
+                f.required().string();
+            });
+            m.relation("packages", |r| {
+                r.vec("Package").fields(vec!["id"]).references(vec!["creatorId"]);
+            });
+            m.relation("editions", |r| {
+                r.vec("Edition").fields(vec!["id"]).references(vec!["creatorId"]);
+            });
+        });
+
+        g.model("Package", |m| {
+            m.field("id", |f| {
+                f.primary().required().readonly().object_id().column_name("_id").auto();
+            });
+            m.field("name", |f| {
+                f.required().string();
+            });
+            m.relation("editions", |r| {
+                r.vec("Edition").fields(vec!["id"]).references(vec!["packageId"]);
+            });
+            m.field("creatorId", |f| {
+                f.required().object_id();
+            });
+            m.relation("creator", |r| {
+               r.object("Creator").fields(vec!["creatorId"]).references(vec!["id"]);
+            });
+        });
+
+        g.model("Edition", |m| {
+            m.field("id", |f| {
+                f.primary().required().readonly().object_id().column_name("_id").auto();
+            });
+            m.field("name", |f| {
+                f.required().string();
+            });
+            m.field("packageId", |f| {
+                f.required().object_id();
+            });
+            m.relation("package", |r| {
+               r.object("Package").fields(vec!["packageId"]).references(vec!["id"]);
+            });
+            m.field("creatorId", |f| {
+                f.required().object_id();
+            });
+            m.relation("creator", |r| {
+                r.object("Creator").fields(vec!["creatorId"]).references(vec!["id"]);
+            });
+        });
+
         g.model("Unit", |m| {
             m.field("id", |f| {
                 f.primary().required().readonly().object_id().column_name("_id").auto();
@@ -319,6 +374,7 @@ async fn main() -> std::io::Result<()> {
     let app = App::new(|a| {
         a.server(|s| {
             s.jwt_secret("my secret");
+            s.bind(("0.0.0.0", 5300u16));
         });
     });
     run(graph, app).await
