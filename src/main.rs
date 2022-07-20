@@ -1,21 +1,21 @@
+use teo::app::app::App;
+use teo::app::run;
 use tokio::main;
 use teo::core::builders::pipeline_builder::PipelineBuilder;
 use teo::core::graph::Graph;
 use teo::core::value::Value;
-use teo::server::server::Server;
 
 
-async fn make_graph() -> &'static Graph {
+async fn make_graph() -> Graph {
 
     let mongo_url = match std::env::var("MONGO_URL") {
         Ok(url) => url,
         Err(_err) => "mongodb://127.0.0.1:27017/teotestserver".to_string()
     };
 
-    let graph = Box::leak(Box::new(Graph::new(|g| {
-
+    Graph::new(|g| {
         g.data_source().mongodb(&mongo_url);
-
+        g.url_prefix("/api/v1");
         g.model("Unit", |m| {
             m.field("id", |f| {
                 f.primary().required().readonly().object_id().column_name("_id").auto();
@@ -310,25 +310,16 @@ async fn make_graph() -> &'static Graph {
                 });
             });
         });
-
-        g.jwt_secret("my secret");
-
-        g.host_url("https://api.chaping.com");
-
-        g.client().typescript().at("./client/typescript").react_hooks();
-
-        g.client().swift().at("./client/swift").combine_observable_objects();
-
-        g.client().kotlin().at("./client/kotlin").jetpack_compose_states();
-
-    }).await));
-
-    graph
+    }).await
 }
 
 #[main]
 async fn main() -> std::io::Result<()> {
     let graph = make_graph().await;
-    let server = Box::leak(Box::new(Server::new(graph)));
-    server.start(5000).await
+    let app = App::new(|a| {
+        a.server(|s| {
+            s.jwt_secret("my secret");
+        });
+    });
+    run(graph, app).await
 }
