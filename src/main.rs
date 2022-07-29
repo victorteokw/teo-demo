@@ -75,6 +75,9 @@ async fn make_graph() -> Graph {
             m.field("id", |f| {
                 f.primary().required().readonly().object_id().column_name("_id").auto();
             });
+            m.field("bool", |f| {
+                f.optional().bool();
+            });
             m.field("num", |f| {
                 f.required().f64().default(0f64).on_save(|p| {
                     p.transform(&|v: f64| async move { v + 1.0 });
@@ -100,11 +103,25 @@ async fn make_graph() -> Graph {
                     p.now();
                 });
             });
-            m.on_created(&|object| async {
-                println!("OK: this is created.");
+            m.on_created(&|object| async move {
+                let string: String = object.get("str")?;
+                let vec: Vec<String> = object.get("vec")?;
+                let num: f64 = object.get("num")?;
+                let bool: Option<bool> = object.get("bool")?;
+                println!("created: {string} {vec:?} {num} {bool:?}");
+                object.set("num", 25)?;
+                object.save().await?;
+                Ok(())
             });
-            m.on_updated(&|object| async {
-                println!("OK: this is updated.");
+            m.on_updated(&|object| async move {
+                let string: String = object.get("str")?;
+                let vec: Vec<String> = object.get("vec")?;
+                let num: f64 = object.get("num")?;
+                let bool: Option<bool> = object.get("bool")?;
+                println!("updated: {string} {vec:?} {num} {bool:?}");
+                object.set("num", 80)?;
+                object.save().await?;
+                Ok(())
             });
         });
 
